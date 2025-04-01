@@ -2,7 +2,7 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -70,13 +70,51 @@ impl<T> LinkedList<T> {
         }
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    where 
+        T: PartialOrd
 	{
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+		
+        let mut dummy_head = Box::new(Node::new(unsafe { std::mem::zeroed() }));
+    let mut current = unsafe { NonNull::new_unchecked(dummy_head.as_mut()) };
+        let mut a_ptr=list_a.start;
+        let mut b_ptr=list_b.start;
+        while let (Some(a), Some(b)) = (a_ptr, b_ptr) {
+            let a_val = unsafe { &(*a.as_ptr()).val };
+            let b_val = unsafe { &(*b.as_ptr()).val };
+    
+            if a_val <= b_val {
+                unsafe {
+                    (*current.as_ptr()).next = a_ptr;
+                    current = a;
+                    a_ptr = (*a.as_ptr()).next;
+                }
+            } else {
+                unsafe {
+                    (*current.as_ptr()).next = b_ptr;
+                    current = b;
+                    b_ptr = (*b.as_ptr()).next;
+                }
+            }
         }
+    
+        // 连接剩余部分
+        unsafe {
+            (*current.as_ptr()).next = if a_ptr.is_some() { a_ptr } else { b_ptr };
+        }
+    
+        // 构建新链表结构
+        let merged = LinkedList {
+            start: dummy_head.next,
+            end: if list_a.end.is_some() { list_a.end } else { list_b.end },
+            length: list_a.length + list_b.length,
+        };
+    
+        // 防止原链表被析构
+        std::mem::forget(list_a);
+        std::mem::forget(list_b);
+    
+        merged
 	}
 }
 
