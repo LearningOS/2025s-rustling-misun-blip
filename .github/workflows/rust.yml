@@ -22,10 +22,12 @@ jobs:
       points: ${{ steps.autograding.outputs.points}}
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Set output
+      run: echo "{name}={value}" >> $GITHUB_OUTPUT
+    - uses: actions/checkout@v4
     - name: Run tests
       run: cargo test --test cicv --verbose
-    - uses: yfblock/os-autograding@v1.2.0  # 改用固定版本号
+    - uses: yfblock/os-autograding@master
       id: autograding
       with:
         outputFile: .github/result/check_result.json
